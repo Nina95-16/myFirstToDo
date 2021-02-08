@@ -15,12 +15,30 @@ public class ToDoManager {
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy:MM:dd HH:mm:ss");
     private UserManager userManager = new UserManager();
 
+    public ToDo getById(long id) {
+        String sql = "SELECT * FROM todo WHERE id = " + id;
+        try {
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery(sql);
+            if (resultSet.next()) {
+                return getToDoFromResultSet(resultSet);
+            }
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+            System.exit(1);
+        }
+        return null;
+    }
+
     public boolean createToDo(ToDo toDo) {
         String sql = "INSERT INTO todo(title,deadline,status,user_id) VALUES(?,?,?,?)";
         try {
             PreparedStatement pStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             pStatement.setString(1, toDo.getTitle());
-            pStatement.setString(2, sdf.format(toDo.getDeadline()));
+            if (toDo.getDeadline() != null) {
+                pStatement.setString(2, sdf.format(toDo.getDeadline()));
+            } else
+                pStatement.setString(2, null);
             pStatement.setString(3, toDo.getStatus().name());
             pStatement.setLong(4, toDo.getUser().getId());
             pStatement.executeUpdate();
@@ -41,7 +59,7 @@ public class ToDoManager {
             return ToDo.builder()
                     .id(resultSet.getLong(1))
                     .title(resultSet.getString(2))
-                    .deadline(sdf.parse(resultSet.getString(3)))
+                    .deadline(resultSet.getString(3) == null ? null : sdf.parse(resultSet.getString(3)))
                     .status(ToDoStatus.valueOf(resultSet.getString(4)))
                     .user(userManager.getById(resultSet.getLong(5)))
                     .createdDate(sdf.parse(resultSet.getString(6)))
