@@ -57,7 +57,6 @@ public class UserManager {
             }
         } catch (SQLException throwables) {
             throwables.printStackTrace();
-            System.exit(1);
         }
         return null;
     }
@@ -105,8 +104,7 @@ public class UserManager {
                     .password(resultSet.getString(5))
                     .build();
         } catch (SQLException throwables) {
-            throwables.printStackTrace();
+            return null;
         }
-        return null;
     }
 }

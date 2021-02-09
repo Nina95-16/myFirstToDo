@@ -8,6 +8,7 @@ import myToDo.models.User;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
@@ -63,7 +64,7 @@ public class MyToDo implements Commands {
             String commands = scanner.nextLine();
             switch (commands) {
                 case LOGOUT:
-                    System.exit(0);
+                    isRun = false;
                     currentUser = null;
                     break;
                 case ADD_NEW_TODO:
@@ -102,11 +103,16 @@ public class MyToDo implements Commands {
     private static void changeToDoStatus() {
         System.out.println("Please choose todo from list");
         List<ToDo> allToDosByUser = toDoManager.getAllToDosByUser(currentUser.getId());
-        System.out.println(allToDosByUser);
+        for (ToDo toDo : allToDosByUser) {
+            System.out.println(toDo);
+        }
         long id = Long.parseLong(scanner.nextLine());
         ToDo byId = toDoManager.getById(id);
         if (byId.getUser().getId() == currentUser.getId()) {
-            if (toDoManager.update(id, ToDoStatus.valueOf(scanner.nextLine()))) {
+            System.out.println("Please choose Status");
+            System.out.println(Arrays.toString(ToDoStatus.values()));
+            ToDoStatus status = ToDoStatus.valueOf(scanner.nextLine());
+            if (toDoManager.update(id, status)) {
                 System.out.println("Status was changed");
             } else {
                 System.out.println("Something went wrong");
@@ -118,7 +124,9 @@ public class MyToDo implements Commands {
     private static void deleteToDo() {
         System.out.println("Select todo from list");
         List<ToDo> allToDosByUser = toDoManager.getAllToDosByUser(currentUser.getId());
-        System.out.println(allToDosByUser);
+        for (ToDo toDo : allToDosByUser) {
+            System.out.println(toDo);
+        }
         long id = Long.parseLong(scanner.nextLine());
         ToDo byId = toDoManager.getById(id);
         if (byId.getUser().getId() == currentUser.getId()) {
@@ -128,7 +136,7 @@ public class MyToDo implements Commands {
     }
 
     private static void addToDo() {
-        System.out.println("Please input title, deadline (This format: yyyy:MM:dd HH:mm:ss )");
+        System.out.println("Please input title, deadline (This format: yyyy-MM-dd HH:mm:ss )");
         String todoData = scanner.nextLine();
         String[] todoDataArr = todoData.split(",");
         ToDo toDo = new ToDo();
@@ -137,18 +145,18 @@ public class MyToDo implements Commands {
             toDo.setTitle(title);
             try {
                 if (todoDataArr[1] != null) {
-                    sdf.parse(todoDataArr[1]);
+                    toDo.setDeadline(sdf.parse(todoDataArr[1]));
                 }
-                toDo.setStatus(ToDoStatus.TODO);
-                toDo.setUser(currentUser);
-                if (toDoManager.createToDo(toDo)) {
-                    System.out.println("ToDo was added");
-                } else
-                    System.out.println("Something went wrong");
             } catch (IndexOutOfBoundsException e) {
             } catch (ParseException e) {
-                System.out.println("Please input date by this format: yyyy:MM:dd HH:mm:ss");
+                System.out.println("Please input date by this format: yyyy-MM-dd HH:mm:ss");
             }
+            toDo.setStatus(ToDoStatus.TODO);
+            toDo.setUser(currentUser);
+            if (toDoManager.createToDo(toDo)) {
+                System.out.println("ToDo was added");
+            } else
+                System.out.println("Something went wrong");
         } catch (IndexOutOfBoundsException e) {
             System.out.println("Wrong data!");
         }

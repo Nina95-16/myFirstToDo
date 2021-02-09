@@ -12,7 +12,7 @@ import java.util.List;
 
 public class ToDoManager {
     private Connection connection = DBConnectionProvider.getProvider().getConnection();
-    private SimpleDateFormat sdf = new SimpleDateFormat("yyyy:MM:dd HH:mm:ss");
+    private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     private UserManager userManager = new UserManager();
 
     public ToDo getById(long id) {
@@ -78,14 +78,13 @@ public class ToDoManager {
         try {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(sql);
-            if (resultSet.next()) {
-                getToDoFromResultSet(resultSet);
-                return toDos;
+            while (resultSet.next()) {
+               toDos.add(getToDoFromResultSet(resultSet));
             }
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
-        return null;
+        return toDos;
     }
 
     public List<ToDo> getAllToDosByUserIdAndStatus(long userId, ToDoStatus status) {
@@ -96,13 +95,13 @@ public class ToDoManager {
             statement.setLong(1, userId);
             statement.setString(2, status.name());
             ResultSet resultSet = statement.executeQuery();
-            if (resultSet.next()) {
+            while (resultSet.next()) {
                 toDos.add(getToDoFromResultSet(resultSet));
             }
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
-        return null;
+        return toDos;
     }
 
     public boolean update(long id, ToDoStatus status) {
